@@ -144,3 +144,7 @@ async def get_req(request):
     ]
     
     return web.json_response(result)
+
+async def checkHealth(request):
+  # return status 200
+    return web.Response(text="Received GET request")
