@@ -14,7 +14,7 @@ async def main_middleware(app, handler):
             print(f"🟢Body exists: {request.body_exists}")
             print(f"🟢Content type: {request.content_type}")
             print(f"🟢Content length: {request.content_length}")
-            
+
             # Handle CORS preflight requests (OPTIONS)
             if request.method == 'OPTIONS':
                 headers = {
@@ -23,23 +23,23 @@ async def main_middleware(app, handler):
                     "Access-Control-Allow-Headers": "api-key, Content-Type, Authorization, date_req",
                 }
                 return web.Response(status=200, headers=headers)
-            
+
 
             # check headers 'api-key' == '123'
-            if request.headers.get('api-key') == '123':
-                
+            #if request.headers.get('api-key') == '123':
+
  
+
+            try:
+                # Call the CORS middleware handler
+                response = await handler(request)
+                return response
+        
+            except asyncio.TimeoutError:
+                return web.Response(text="Request timed out", status=504)
                 
-                try:
-                 # Call the CORS middleware handler
-                    response = await handler(request)
-                    return response
-            
-                except asyncio.TimeoutError:
-                    return web.Response(text="Request timed out", status=504)
-                
-            else:
-                return web.Response(text="API key is missing or invalid", status=401)
+            #else:
+                #return web.Response(text="API key is missing or invalid", status=401)
                
  
           

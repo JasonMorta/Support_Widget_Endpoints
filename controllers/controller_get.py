@@ -4,8 +4,11 @@ import aiohttp
 import urllib.parse
 
 # Fetch tickets from Freshdesk API
+
+
 async def fetch_tickets(session, page, dateStamp):
-    url = f"https://newaccount1627234890025.freshdesk.com/api/v2/tickets?updated_since={dateStamp}T00:00:00Z&order_by=created_at&order_type=asc&per_page=100&page={page}"
+    url = f"https://newaccount1627234890025.freshdesk.com/api/v2/tickets?updated_since={
+        dateStamp}T00:00:00Z&order_by=created_at&order_type=asc&per_page=100&page={page}"
     print('url = ', url)
 
     bearer_token = "WXJJclVqVFhxS0VOU3pvNXJkSGc="
@@ -18,17 +21,18 @@ async def fetch_tickets(session, page, dateStamp):
         print(f"Fetching page {page}...")
         async with session.get(url, headers=headers) as response:
             response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
-            
+
             if response.status == 401:
                 print("Authentication failed: Invalid credentials.")
                 return None
-            
+
             if response.status == 400:
-                print(f"Bad Request: Invalid date format. response: {response}")
+                print(
+                    f"Bad Request: Invalid date format. response: {response}")
                 return None
-            
+
             return await response.json()
-    
+
     except aiohttp.ClientResponseError as http_err:
         print(f"HTTP error occurred: {http_err}, response: {response}")
         return None
@@ -36,10 +40,12 @@ async def fetch_tickets(session, page, dateStamp):
         print(f"Request error occurred: {req_err}")
     except Exception as err:
         print(f"An error occurred: {err}")
-    
+
     return []  # Return an empty list in case of error
 
 # Fetch agents from Freshdesk API
+
+
 async def fetch_agents(session):
     url = "https://newaccount1627234890025.freshdesk.com/api/v2/agents?per_page=100"
     bearer_token = "WXJJclVqVFhxS0VOU3pvNXJkSGc="
@@ -52,22 +58,23 @@ async def fetch_agents(session):
         print(f"Fetching agents...")
         async with session.get(url, headers=headers) as response:
             response.raise_for_status()  # Raises HTTPError for bad responses (4xx or 5xx)
-            
+
             if response.status == 401:
                 print("Authentication failed: Invalid credentials.")
                 return None
             agents = await response.json()
             print(f"{len(agents)} agents fetched.")
             return agents
-    
+
     except aiohttp.ClientResponseError as http_err:
         print(f"HTTP error occurred: {http_err}")
     except aiohttp.ClientError as req_err:
         print(f"Request error occurred: {req_err}")
     except Exception as err:
         print(f"An error occurred: {err}")
-    
+
     return []  # Return an empty list in case of error
+
 
 async def fetch_all_tickets(session, dateStamp):
     print(f"🏳️ Fetching all tickets since: {dateStamp}...")
@@ -84,11 +91,13 @@ async def fetch_all_tickets(session, dateStamp):
 
             if len(tickets) < 100:  # Stop if the response length is less than 100
                 all_tickets.extend(tickets)
-                print(f"Fetched all tickets up to page {page}. Total tickets: {len(all_tickets)}")
+                print(f"Fetched all tickets up to page {
+                      page}. Total tickets: {len(all_tickets)}")
                 break
 
             all_tickets.extend(tickets)
-            print(f"Page {page} fetched. Total tickets so far: {len(all_tickets)}")
+            print(f"Page {page} fetched. Total tickets so far: {
+                  len(all_tickets)}")
             page += 1  # Move to the next page
 
         except Exception as err:
@@ -109,7 +118,8 @@ async def get_req(request):
 
         # If there was an error fetching tickets, return the error response
         if not all_tickets:
-            error_message = f"Failed to fetch tickets. Date: {dateStamp}. Error: {ticket_error or 'No tickets found.'}"
+            error_message = f"Failed to fetch tickets. Date: {
+                dateStamp}. Error: {ticket_error or 'No tickets found.'}"
             return web.Response(text=error_message, status=500)
 
         # Fetch agents only if fetching tickets was successful
@@ -137,14 +147,15 @@ async def get_req(request):
         {
             "responder_id": responder_id,
             "name": agent_map.get(responder_id, "Unknown"),
-            "tickets_completed": len(tickets),  # Count the number of completed tickets
+            # Count the number of completed tickets
+            "tickets_completed": len(tickets),
             "ticket_items": tickets  # List of all tickets for this agent
         }
         for responder_id, tickets in responder_ticket_map.items()
     ]
-    
+
     return web.json_response(result)
 
-async def checkHealth(request):
-  # return status 200
-    return web.Response(text="Received GET request")
+async def checkHealth():
+        print('=== health check hit ===')
+        return web.json_response({"status": "OK"}, status=301)
